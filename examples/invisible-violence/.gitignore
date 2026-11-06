@@ -1,0 +1,25 @@
+.node/
+.state/
+node_modules/
+
+.DS_Store
+
+__pycache__/
+*.pyc
+
+# Large background video — copy locally (see README).
+assets/background-video.mp4
+
+# iPad controller background (large; keep local copies only — not on GitHub).
+assets/ipad-background.mov
+assets/ipad-background.MOV
+assets/ipad-background.mp4
+
+# Git cannot ignore paths outside the repo (e.g. Desktop). Copy into assets/ instead, e.g.:
+#   cp "/Users/maoyuman/Desktop/iPad background video.MP4" assets/ipad-background.mp4
+#   cp "/Users/maoyuman/Desktop/iPad background video.MOV" assets/ipad-background.mov
+# If Desktop originals are ever copied into the project by mistake, ignore them:
+iPad background video.MOV
+**/iPad background video.MOV
+iPad background video.MP4
+**/iPad background video.MP4

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta name="theme-color" content="#050208" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="IV Remote" />
+    <title>Language Remote Controller</title>
+    <link rel="manifest" href="/controller-manifest.webmanifest?v=1" />
+    <link rel="stylesheet" href="styles.css?v=12" />
+  </head>
+  <body class="controller-page">
+    <!-- Five taps top-right (invisible hit target) toggle fullscreen / show hints — controller.js -->
+    <div
+      id="controller-fs-zone"
+      class="controller-fs-hitzone"
+      aria-label="Fullscreen: tap five times quickly in this corner"
+    ></div>
+    <p id="controller-fs-feedback" class="controller-fs-feedback" role="status"></p>
+    <video
+      id="bg-video"
+      class="controller-bg-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      webkit-playsinline
+      preload="auto"
+      aria-hidden="true"
+    >
+      <!-- MP4 (H.264) plays reliably in Chrome / many desktops; MOV is best-effort + Safari/iPad. -->
+      <source src="assets/ipad-background.mp4" type="video/mp4" />
+      <source src="assets/ipad-background.mov" type="video/quicktime" />
+    </video>
+    <main class="controller-ui" aria-label="Remote language controls">
+      <div class="controller-button-row">
+        <span class="controller-btn-spacer" aria-hidden="true"></span>
+        <button id="click-btn" class="control-button controller-btn-side" type="button">
+          Attack More
+        </button>
+        <span class="controller-btn-spacer" aria-hidden="true"></span>
+        <button id="long-press-btn" class="control-button controller-btn-side" type="button">
+          Attack Less
+        </button>
+        <span class="controller-btn-spacer" aria-hidden="true"></span>
+      </div>
+      <p id="status-text" class="controller-status-text">
+        Use Attack More or Attack Less to change what appears on the main screen.
+      </p>
+      <p
+        id="relay-hint"
+        class="controller-status-text"
+        style="display: none; max-width: 92vw; margin-left: auto; margin-right: auto"
+      ></p>
+    </main>
+    <aside
+      id="controller-kiosk-banner"
+      class="controller-kiosk-banner"
+      role="note"
+      hidden
+    >
+      <p class="controller-kiosk-banner-text">
+        <strong>iPad / iPhone:</strong> Safari and Chrome <em>cannot</em> hide the tab strip or
+        address bar while you browse inside the browser app.
+        <strong>To hide them,</strong> use
+        <strong>Share → Add to Home Screen</strong>, then open this controller from the new icon.
+      </p>
+      <button
+        id="controller-kiosk-banner-dismiss"
+        type="button"
+        class="controller-kiosk-banner-dismiss"
+      >
+        Got it
+      </button>
+    </aside>
+    <script src="controller.js?v=16"></script>
+  </body>
+</html>

@@ -13,6 +13,7 @@ import { pickLanHost } from "./lan-host.js";
  *   stateDir?: string;
  *   adminToken?: string;
  *   beaconPort?: number;
+ *   pairingPort?: number;
  * }} ExhibitConnectOptions
  */
 

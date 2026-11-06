@@ -26,6 +26,15 @@ Integrate into an existing Node HTTP server with `@exhibit-connect/server` middl
 
 See [docs/protocol.md](./docs/protocol.md).
 
+## Tests
+
+```bash
+npm test          # core + HTTP/UDP workflow
+npx playwright test   # Invisible Violence projection + tablet UI (Chromium)
+```
+
+Local fixture: `examples/invisible-violence` (student piece without large videos).
+
 ## Android
 
 Planned under `android/` — generic kiosk shell: beacon list → select PC → enter code → WebView to the exhibit controller URL.

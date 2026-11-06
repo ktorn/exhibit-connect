@@ -27,7 +27,10 @@ async function readJsonBody(req) {
  * @param {unknown} body
  */
 function json(res, status, body) {
-  res.writeHead(status, { "Content-Type": "application/json" });
+  res.writeHead(status, {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+  });
   res.end(JSON.stringify(body));
 }
 
@@ -80,6 +83,16 @@ export function createExhibitConnectHandlers(ctx) {
     const path = url.pathname.slice(PREFIX.length) || "/";
 
     try {
+      if (req.method === "OPTIONS") {
+        res.writeHead(204, {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        });
+        res.end();
+        return true;
+      }
+
       if (req.method === "GET" && path === "/status") {
         json(res, 200, await statusPayload());
         return true;
@@ -90,6 +103,7 @@ export function createExhibitConnectHandlers(ctx) {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           Connection: "keep-alive",
+          "Access-Control-Allow-Origin": "*",
         });
         res.write("\n");
         projectionHub.subscribe(res);
@@ -146,6 +160,7 @@ export function createExhibitConnectHandlers(ctx) {
         const controllerPath = config.controllerPath ?? "/controller.html";
         json(res, 200, {
           ok: true,
+          exhibitId: config.exhibitId,
           httpBase,
           controllerPath,
           controllerUrl: `${httpBase}${controllerPath}`,

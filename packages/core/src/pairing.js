@@ -4,6 +4,11 @@ export const PAIRING_CODE_LENGTH = 6;
 export const PAIRING_TTL_MS = 5 * 60 * 1000;
 export const TABLET_IDLE_MS = 45 * 1000;
 
+export function tabletIdleMs() {
+  const raw = Number(process.env.EXHIBIT_CONNECT_TABLET_IDLE_MS);
+  return Number.isFinite(raw) && raw > 0 ? raw : TABLET_IDLE_MS;
+}
+
 /**
  * @typedef {Object} PersistedState
  * @property {string | null} pairedTabletId
@@ -34,7 +39,7 @@ export function isTabletConnected(persisted, nowMs = Date.now()) {
   if (!persisted.pairedTabletId || persisted.lastTabletPingMs == null) {
     return false;
   }
-  return nowMs - persisted.lastTabletPingMs < TABLET_IDLE_MS;
+  return nowMs - persisted.lastTabletPingMs < tabletIdleMs();
 }
 
 /**

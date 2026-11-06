@@ -3,10 +3,16 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/invisible-violence"
   ],
   "scripts": {
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@exhibit-connect/core": "*",
+    "@playwright/test": "1.47.2"
   },
   "engines": {
     "node": ">=20"

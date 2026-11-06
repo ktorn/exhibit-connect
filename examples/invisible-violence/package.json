@@ -1,0 +1,12 @@
+{
+  "name": "invisible-violence",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@exhibit-connect/server": "*",
+    "ws": "^8.18.0"
+  }
+}

@@ -10,6 +10,7 @@ export {
   PAIRING_CODE_LENGTH,
   PAIRING_TTL_MS,
   TABLET_IDLE_MS,
+  tabletIdleMs,
   generatePairingCode,
   isTabletConnected,
   broadcastMode,

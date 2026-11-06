@@ -43,6 +43,7 @@ export function attachProjectionOverlay(opts = {}) {
   Object.assign(title.style, { fontSize: "1.25rem", opacity: "0.85", marginBottom: "1rem" });
 
   const codeEl = document.createElement("div");
+  codeEl.setAttribute("data-exhibit-connect-code", "1");
   Object.assign(codeEl.style, {
     fontSize: "4rem",
     fontWeight: "700",

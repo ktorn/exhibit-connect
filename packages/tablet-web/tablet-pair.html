@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exhibit tablet pairing</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #111;
+        color: #eee;
+        margin: 0;
+        padding: 1.5rem;
+      }
+      button,
+      input {
+        font-size: 1.1rem;
+        padding: 0.5rem 0.75rem;
+      }
+      #pc-list button {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+        text-align: left;
+      }
+      #code-row {
+        display: none;
+        margin-top: 1rem;
+      }
+      #status {
+        margin-top: 1rem;
+        opacity: 0.8;
+      }
+      .err {
+        color: #f88;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Gallery tablet</h1>
+    <p id="status">Starting…</p>
+    <div id="pc-list"></div>
+    <div id="code-row">
+      <label>Code from main projection <input id="code" inputmode="numeric" maxlength="6" /></label>
+      <button id="confirm" type="button">Confirm</button>
+    </div>
+    <script type="module" src="./tablet-pair.js"></script>
+  </body>
+</html>

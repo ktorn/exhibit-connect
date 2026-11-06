@@ -1,0 +1,12 @@
+{
+  "name": "Invisible Violence — Controller",
+  "short_name": "IV Controller",
+  "description": "Remote controller for the exhibit display.",
+  "start_url": "/controller.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui", "browser"],
+  "background_color": "#000000",
+  "theme_color": "#050208",
+  "orientation": "any"
+}

@@ -20,15 +20,7 @@ export function startBeaconLoop(opts) {
   const intervalMs = opts.intervalMs ?? 2000;
   const socket = dgram.createSocket("udp4");
 
-  socket.bind(() => {
-    try {
-      socket.setBroadcast(true);
-    } catch {
-      /* ignore */
-    }
-  });
-
-  const timer = setInterval(async () => {
+  async function tick() {
     const lanHost = await opts.getLanHost();
     if (!lanHost) return;
     const { persisted, active } = await opts.getPairingSnapshot();
@@ -44,7 +36,19 @@ export function startBeaconLoop(opts) {
     });
     const buf = beaconToBuffer(payload);
     socket.send(buf, port, "255.255.255.255", () => {});
-  }, intervalMs);
+    socket.send(buf, port, "127.0.0.1", () => {});
+  }
+
+  socket.bind(() => {
+    try {
+      socket.setBroadcast(true);
+    } catch {
+      /* ignore */
+    }
+    tick();
+  });
+
+  const timer = setInterval(tick, intervalMs);
 
   return {
     stop() {

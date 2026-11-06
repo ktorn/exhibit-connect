@@ -21,6 +21,26 @@ adb shell dpm set-device-owner org.usj.exhibitconnect/.AdminReceiver
 
 Requires no Google accounts on the tablet. Boot completed relaunches the app.
 
+## Install on a tablet (no USB)
+
+Download the debug APK (no secrets; PIN is set on first launch):
+
+https://github.com/ktorn/exhibit-connect/raw/main/android/apk/exhibit-connect-debug.apk
+
+On the tablet: Chrome → that URL → allow **Install unknown apps** for Chrome.
+
+### Wireless adb (device owner / no status-bar swipe)
+
+Same Wi‑Fi as your Mac. On the tablet: **Settings → Developer options → Wireless debugging** → Pair with pairing code, then:
+
+```bash
+adb pair <tablet-ip>:<pairing-port>
+adb connect <tablet-ip>:<adb-port>
+adb shell dpm set-device-owner org.usj.exhibitconnect/.AdminReceiver
+```
+
+`dpm` needs a factory-reset tablet with **no Google account**.
+
 ## Build / emulator
 
 ```bash

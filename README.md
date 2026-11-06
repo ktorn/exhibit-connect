@@ -38,3 +38,5 @@ Local fixture: `examples/invisible-violence` (student piece without large videos
 ## Android kiosk
 
 `android/` is a lock-task APK: first-run staff PIN, fullscreen WebView, five taps **top-right** then PIN to leave. See [android/README.md](./android/README.md).
+
+Download: [android/apk/exhibit-connect-debug.apk](https://github.com/ktorn/exhibit-connect/raw/main/android/apk/exhibit-connect-debug.apk)

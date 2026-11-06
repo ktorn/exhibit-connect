@@ -18,7 +18,7 @@
             android:name=".AppActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="landscape"
             android:lockTaskMode="if_whitelisted"
             android:showWhenLocked="true"
             android:turnScreenOn="true"

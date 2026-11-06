@@ -17,6 +17,7 @@ import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
@@ -40,12 +41,14 @@ class AppActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        prefs = Prefs(this)
+        applyOrientation()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_app)
-        prefs = Prefs(this)
         findViewById<View>(R.id.exitHotspot).setOnClickListener { onExitTap() }
         findViewById<Button>(R.id.savePin).setOnClickListener { savePin() }
         findViewById<Button>(R.id.confirm).setOnClickListener { confirmPair() }
+        findViewById<Button>(R.id.saveSettings).setOnClickListener { saveSettings() }
         if (!prefs.hasPin()) {
             showSetup()
         } else {
@@ -55,8 +58,9 @@ class AppActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        KioskPolicy.apply(this)
         immersive()
-        if (prefs.hasPin()) {
+        if (prefs.hasPin() && findViewById<View>(R.id.settingsPanel).visibility != View.VISIBLE) {
             startLockTaskSafe()
         }
     }
@@ -73,9 +77,34 @@ class AppActivity : AppCompatActivity() {
         /* kiosk: ignore */
     }
 
+    private fun applyOrientation() {
+        requestedOrientation = KioskPolicy.activityInfo(prefs.orientation)
+    }
+
+    private fun orientationFrom(groupId: Int): String {
+        val id = findViewById<RadioGroup>(groupId).checkedRadioButtonId
+        return when (id) {
+            R.id.oriPortrait, R.id.setOriPortrait -> KioskPolicy.ORIENTATION_PORTRAIT
+            R.id.oriPortraitRev, R.id.setOriPortraitRev -> KioskPolicy.ORIENTATION_PORTRAIT_REV
+            R.id.oriLandscapeRev, R.id.setOriLandscapeRev -> KioskPolicy.ORIENTATION_LANDSCAPE_REV
+            else -> KioskPolicy.ORIENTATION_LANDSCAPE
+        }
+    }
+
+    private fun checkOrientation(landscape: Int, landscapeRev: Int, portrait: Int, portraitRev: Int) {
+        val id = when (prefs.orientation) {
+            KioskPolicy.ORIENTATION_PORTRAIT -> portrait
+            KioskPolicy.ORIENTATION_PORTRAIT_REV -> portraitRev
+            KioskPolicy.ORIENTATION_LANDSCAPE_REV -> landscapeRev
+            else -> landscape
+        }
+        findViewById<RadioGroup>(R.id.settingsOrientation).check(id)
+    }
+
     private fun showSetup() {
         findViewById<View>(R.id.setupPanel).visibility = View.VISIBLE
         findViewById<View>(R.id.pairingPanel).visibility = View.GONE
+        findViewById<View>(R.id.settingsPanel).visibility = View.GONE
         findViewById<View>(R.id.web).visibility = View.GONE
     }
 
@@ -92,11 +121,41 @@ class AppActivity : AppCompatActivity() {
             return
         }
         prefs.setPin(a)
+        prefs.orientation = orientationFrom(R.id.setupOrientation)
+        applyOrientation()
+        enterKiosk()
+    }
+
+    private fun showSettings() {
+        findViewById<View>(R.id.setupPanel).visibility = View.GONE
+        findViewById<View>(R.id.pairingPanel).visibility = View.GONE
+        findViewById<View>(R.id.web).visibility = View.GONE
+        findViewById<View>(R.id.settingsPanel).visibility = View.VISIBLE
+        checkOrientation(
+            R.id.setOriLandscape,
+            R.id.setOriLandscapeRev,
+            R.id.setOriPortrait,
+            R.id.setOriPortraitRev,
+        )
+        val owner = if (KioskPolicy.isDeviceOwner(this)) {
+            "Status bar / notification shade: blocked (device owner)."
+        } else {
+            "Status bar swipe is fully blocked only after device owner:\n" +
+                "adb shell dpm set-device-owner org.usj.exhibitconnect/.AdminReceiver"
+        }
+        findViewById<TextView>(R.id.ownerStatus).text = owner
+    }
+
+    private fun saveSettings() {
+        prefs.orientation = orientationFrom(R.id.settingsOrientation)
+        findViewById<View>(R.id.settingsPanel).visibility = View.GONE
+        applyOrientation()
         enterKiosk()
     }
 
     private fun enterKiosk() {
         findViewById<View>(R.id.setupPanel).visibility = View.GONE
+        findViewById<View>(R.id.settingsPanel).visibility = View.GONE
         immersive()
         startLockTaskSafe()
         val last = prefs.lastHttpBase
@@ -325,22 +384,28 @@ class AppActivity : AppCompatActivity() {
     }
 
     private fun staffMenu() {
-        try {
-            stopLockTask()
-        } catch (_: Exception) {
-        }
         AlertDialog.Builder(this)
             .setTitle("Staff")
-            .setItems(arrayOf("Resume exhibit", "Unpair tablet", "Exit app")) { _, which ->
+            .setItems(
+                arrayOf("Resume exhibit", "Settings", "Unpair tablet", "Exit app"),
+            ) { _, which ->
                 when (which) {
-                    0 -> startLockTaskSafe()
-                    1 -> {
+                    0 -> {
+                        startLockTaskSafe()
+                        immersive()
+                    }
+                    1 -> showSettings()
+                    2 -> {
                         prefs.unpair()
                         findViewById<WebView>(R.id.web).loadUrl("about:blank")
                         startScan()
                         startLockTaskSafe()
                     }
-                    2 -> {
+                    3 -> {
+                        try {
+                            stopLockTask()
+                        } catch (_: Exception) {
+                        }
                         finishAffinity()
                     }
                 }
@@ -358,13 +423,20 @@ class AppActivity : AppCompatActivity() {
     }
 
     private fun immersive() {
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+        )
         if (Build.VERSION.SDK_INT >= 30) {
             window.setDecorFitsSystemWindows(false)
             window.insetsController?.hide(
                 android.view.WindowInsets.Type.statusBars() or
                     android.view.WindowInsets.Type.navigationBars(),
             )
+            // Do not use SHOW_TRANSIENT_BARS_BY_SWIPE — that is the shade pull-down.
+            if (Build.VERSION.SDK_INT >= 31) {
+                window.insetsController?.systemBarsBehavior = 0
+            }
         } else {
             @Suppress("DEPRECATION")
             window.decorView.systemUiVisibility =

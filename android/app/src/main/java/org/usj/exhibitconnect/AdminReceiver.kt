@@ -5,5 +5,7 @@ import android.content.Context
 import android.content.Intent
 
 class AdminReceiver : DeviceAdminReceiver() {
-    override fun onEnabled(context: Context, intent: Intent) = Unit
+    override fun onEnabled(context: Context, intent: Intent) {
+        KioskPolicy.apply(context)
+    }
 }

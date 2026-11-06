@@ -33,6 +33,49 @@
                 android:textColor="#AAAAAA"
                 android:textSize="16sp" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Stand orientation (fixed, no sensor)"
+                android:textColor="#AAAAAA" />
+
+            <RadioGroup
+                android:id="@+id/setupOrientation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp">
+
+                <RadioButton
+                    android:id="@+id/oriLandscape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Landscape"
+                    android:textColor="#EEEEEE" />
+
+                <RadioButton
+                    android:id="@+id/oriLandscapeRev"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Landscape flipped"
+                    android:textColor="#EEEEEE" />
+
+                <RadioButton
+                    android:id="@+id/oriPortrait"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Portrait"
+                    android:textColor="#EEEEEE" />
+
+                <RadioButton
+                    android:id="@+id/oriPortraitRev"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Portrait flipped"
+                    android:textColor="#EEEEEE" />
+            </RadioGroup>
+
             <EditText
                 android:id="@+id/pin1"
                 android:layout_width="240dp"
@@ -129,6 +172,83 @@
                 android:text="Confirm" />
         </LinearLayout>
     </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/settingsPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kiosk settings"
+                android:textColor="#EEEEEE"
+                android:textSize="28sp" />
+
+            <TextView
+                android:id="@+id/ownerStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="#AAAAAA" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Stand orientation (fixed, no sensor)"
+                android:textColor="#AAAAAA" />
+
+            <RadioGroup
+                android:id="@+id/settingsOrientation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/setOriLandscape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Landscape"
+                    android:textColor="#EEEEEE" />
+
+                <RadioButton
+                    android:id="@+id/setOriLandscapeRev"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Landscape flipped"
+                    android:textColor="#EEEEEE" />
+
+                <RadioButton
+                    android:id="@+id/setOriPortrait"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Portrait"
+                    android:textColor="#EEEEEE" />
+
+                <RadioButton
+                    android:id="@+id/setOriPortraitRev"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Portrait flipped"
+                    android:textColor="#EEEEEE" />
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/saveSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Save and resume" />
+        </LinearLayout>
+    </ScrollView>
 
     <WebView
         android:id="@+id/web"

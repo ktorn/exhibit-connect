@@ -40,6 +40,12 @@ class Prefs(context: Context) {
         get() = p.getString("exhibit_id", null)
         set(v) { p.edit().putString("exhibit_id", v).apply() }
 
+    /** Forced orientation; never uses the accelerometer. */
+    var orientation: String
+        get() = p.getString("orientation", KioskPolicy.ORIENTATION_LANDSCAPE)
+            ?: KioskPolicy.ORIENTATION_LANDSCAPE
+        set(v) { p.edit().putString("orientation", v).apply() }
+
     fun unpair() {
         p.edit()
             .remove("last_http_base")

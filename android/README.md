@@ -7,9 +7,13 @@ Fullscreen lock-task tablet app: UDP discovery, pairing code on the **main proje
 1. **First launch:** set a 4–8 digit PIN (not shown to visitors).
 2. App stays fullscreen; Back does nothing.
 3. **Exit:** five taps in the **top-right** corner (same place the old controller fullscreen gesture used), then enter the PIN.
-4. Staff menu: Resume / Unpair / Exit app.
+4. Staff menu: Resume / **Settings** / Unpair / Exit app.
 
-True lock-task (visitor cannot use Recents/Home) after device owner:
+**Settings (and first run):** force **landscape / landscape flipped / portrait / portrait flipped**. The stand is fixed, so the accelerometer is not used.
+
+Swipe-down from the top (status bar / notifications) is **fully blocked only when the app is device owner**. Without that, Android still allows a system shade gesture.
+
+True lock-task (no Recents/Home, no status bar) after device owner:
 
 ```bash
 adb shell dpm set-device-owner org.usj.exhibitconnect/.AdminReceiver

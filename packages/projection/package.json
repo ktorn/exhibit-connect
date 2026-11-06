@@ -1,0 +1,9 @@
+{
+  "name": "@exhibit-connect/projection",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./exhibit-connect-projection.js",
+  "exports": {
+    ".": "./exhibit-connect-projection.js"
+  }
+}

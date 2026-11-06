@@ -1,0 +1,9 @@
+{
+  "exhibitId": "invisible-violence-2026",
+  "displayName": "Invisible Violence",
+  "student": "Mary",
+  "httpPort": 8899,
+  "controllerPath": "/controller.html",
+  "pairingPort": 41235,
+  "adminToken": ""
+}

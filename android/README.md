@@ -1,11 +1,27 @@
-# Android kiosk (planned)
+# Exhibit Connect kiosk APK
 
-Generic gallery tablet app:
+Fullscreen lock-task tablet app: UDP discovery, pairing code on the **main projection**, last-IP reconnect, WebView controller.
 
-1. UDP listen on beacon port **41234**; list `discovery` and matching `reconnect` entries.
-2. User selects a PC → `POST http://{lanHost}:{pairingPort}/__exhibit-connect/v1/pair/start`.
-3. Prompt for code → `POST .../pair/confirm` → persist `controllerUrl` and `lastHttpBase`.
-4. WebView loads `controllerUrl`; background task sends `POST .../tablet/ping` every 15s.
-5. On cold start, try `lastHttpBase` first; if unreachable, return to beacon scan.
+## Staff PIN and hidden exit
 
-`pairingPort` defaults to **41235** (sidecar) or the exhibit HTTP port when middleware is mounted on the same server.
+1. **First launch:** set a 4–8 digit PIN (not shown to visitors).
+2. App stays fullscreen; Back does nothing.
+3. **Exit:** five taps in the **top-right** corner (same place the old controller fullscreen gesture used), then enter the PIN.
+4. Staff menu: Resume / Unpair / Exit app.
+
+True lock-task (visitor cannot use Recents/Home) after device owner:
+
+```bash
+adb shell dpm set-device-owner org.usj.exhibitconnect/.AdminReceiver
+```
+
+Requires no Google accounts on the tablet. Boot completed relaunches the app.
+
+## Build / emulator
+
+```bash
+cd android
+./gradlew :app:installDebug
+```
+
+Emulator reaches the host exhibit at `10.0.2.2:8899` (UDP broadcast often does not cross the emulator NAT; the app also probes that host).

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#111111">
+
+    <ScrollView
+        android:id="@+id/setupPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Staff PIN"
+                android:textColor="#EEEEEE"
+                android:textSize="28sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Set a PIN on first run. Five taps in the top-right corner, then this PIN, leave kiosk."
+                android:textColor="#AAAAAA"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/pin1"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:hint="PIN (4–8 digits)"
+                android:inputType="numberPassword"
+                android:maxLength="8"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666" />
+
+            <EditText
+                android:id="@+id/pin2"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Confirm PIN"
+                android:inputType="numberPassword"
+                android:maxLength="8"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666" />
+
+            <Button
+                android:id="@+id/savePin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Save PIN and start" />
+
+            <TextView
+                android:id="@+id/setupStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="#F88" />
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/pairingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gallery tablet"
+            android:textColor="#EEEEEE"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Starting…"
+            android:textColor="#AAAAAA"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:id="@+id/pcList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical" />
+
+        <LinearLayout
+            android:id="@+id/codeRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/code"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Code from projection"
+                android:inputType="number"
+                android:maxLength="6"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666" />
+
+            <Button
+                android:id="@+id/confirm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Confirm" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <WebView
+        android:id="@+id/web"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/exitHotspot"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_gravity="top|end"
+        android:background="@android:color/transparent" />
+</FrameLayout>

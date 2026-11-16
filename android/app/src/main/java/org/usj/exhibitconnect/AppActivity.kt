@@ -3,6 +3,7 @@ package org.usj.exhibitconnect
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -19,6 +20,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
 import java.util.concurrent.Executors
@@ -32,9 +34,17 @@ class AppActivity : AppCompatActivity() {
     private var pending: Beacon? = null
     private var tapCount = 0
     private var tapReset: Runnable? = null
+    private var contentStore: ContentStore? = null
+    private var contentServer: ContentHttpServer? = null
     private val ping = object : Runnable {
         override fun run() {
             pingTablet()
+            ui.postDelayed(this, 15_000)
+        }
+    }
+    private val refreshLan = object : Runnable {
+        override fun run() {
+            updateLanLabels()
             ui.postDelayed(this, 15_000)
         }
     }
@@ -49,6 +59,10 @@ class AppActivity : AppCompatActivity() {
         findViewById<Button>(R.id.savePin).setOnClickListener { savePin() }
         findViewById<Button>(R.id.confirm).setOnClickListener { confirmPair() }
         findViewById<Button>(R.id.saveSettings).setOnClickListener { saveSettings() }
+        findViewById<RadioGroup>(R.id.settingsRole).setOnCheckedChangeListener { _, _ ->
+            findViewById<View>(R.id.displaySettings).visibility =
+                if (roleFrom(R.id.settingsRole) == Prefs.ROLE_DISPLAY) View.VISIBLE else View.GONE
+        }
         if (!prefs.hasPin()) {
             showSetup()
         } else {
@@ -68,7 +82,9 @@ class AppActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         beacons.stop()
+        stopDisplayServer()
         ui.removeCallbacks(ping)
+        ui.removeCallbacks(refreshLan)
         io.shutdownNow()
     }
 
@@ -91,6 +107,14 @@ class AppActivity : AppCompatActivity() {
         }
     }
 
+    private fun roleFrom(groupId: Int): String {
+        val id = findViewById<RadioGroup>(groupId).checkedRadioButtonId
+        return when (id) {
+            R.id.roleDisplay, R.id.setRoleDisplay -> Prefs.ROLE_DISPLAY
+            else -> Prefs.ROLE_TABLET
+        }
+    }
+
     private fun checkOrientation(landscape: Int, landscapeRev: Int, portrait: Int, portraitRev: Int) {
         val id = when (prefs.orientation) {
             KioskPolicy.ORIENTATION_PORTRAIT -> portrait
@@ -102,10 +126,13 @@ class AppActivity : AppCompatActivity() {
     }
 
     private fun showSetup() {
+        stopPlayback()
         findViewById<View>(R.id.setupPanel).visibility = View.VISIBLE
         findViewById<View>(R.id.pairingPanel).visibility = View.GONE
         findViewById<View>(R.id.settingsPanel).visibility = View.GONE
         findViewById<View>(R.id.web).visibility = View.GONE
+        findViewById<View>(R.id.video).visibility = View.GONE
+        findViewById<View>(R.id.idlePanel).visibility = View.GONE
     }
 
     private fun savePin() {
@@ -122,14 +149,20 @@ class AppActivity : AppCompatActivity() {
         }
         prefs.setPin(a)
         prefs.orientation = orientationFrom(R.id.setupOrientation)
+        prefs.role = roleFrom(R.id.setupRole)
         applyOrientation()
         enterKiosk()
     }
 
     private fun showSettings() {
+        stopPlayback()
+        beacons.stop()
+        ui.removeCallbacks(ping)
         findViewById<View>(R.id.setupPanel).visibility = View.GONE
         findViewById<View>(R.id.pairingPanel).visibility = View.GONE
         findViewById<View>(R.id.web).visibility = View.GONE
+        findViewById<View>(R.id.video).visibility = View.GONE
+        findViewById<View>(R.id.idlePanel).visibility = View.GONE
         findViewById<View>(R.id.settingsPanel).visibility = View.VISIBLE
         checkOrientation(
             R.id.setOriLandscape,
@@ -137,6 +170,16 @@ class AppActivity : AppCompatActivity() {
             R.id.setOriPortrait,
             R.id.setOriPortraitRev,
         )
+        findViewById<RadioGroup>(R.id.settingsRole).check(
+            if (prefs.isDisplay()) R.id.setRoleDisplay else R.id.setRoleTablet,
+        )
+        findViewById<View>(R.id.displaySettings).visibility =
+            if (prefs.isDisplay()) View.VISIBLE else View.GONE
+        updateLanLabels()
+        val current = contentStore?.snapshot()?.optJSONObject("current")
+        if (current?.optString("type") == "url") {
+            findViewById<EditText>(R.id.displayUrl).setText(current.optString("url"))
+        }
         val owner = if (KioskPolicy.isDeviceOwner(this)) {
             "Status bar / notification shade: blocked (device owner)."
         } else {
@@ -148,8 +191,28 @@ class AppActivity : AppCompatActivity() {
 
     private fun saveSettings() {
         prefs.orientation = orientationFrom(R.id.settingsOrientation)
+        val newRole = roleFrom(R.id.settingsRole)
+        val roleChanged = newRole != prefs.role
+        prefs.role = newRole
+        val url = findViewById<EditText>(R.id.displayUrl).text.toString().trim()
         findViewById<View>(R.id.settingsPanel).visibility = View.GONE
         applyOrientation()
+        if (newRole == Prefs.ROLE_DISPLAY) {
+            if (roleChanged) {
+                prefs.unpair()
+                beacons.stop()
+            }
+            ensureDisplayServer()
+            if (url.isNotEmpty()) {
+                try {
+                    contentStore?.setCurrent(JSONObject().put("type", "url").put("url", url))
+                } catch (_: Exception) {
+                    /* invalid URL kept off-screen */
+                }
+            }
+        } else if (roleChanged) {
+            stopDisplayServer()
+        }
         enterKiosk()
     }
 
@@ -158,6 +221,17 @@ class AppActivity : AppCompatActivity() {
         findViewById<View>(R.id.settingsPanel).visibility = View.GONE
         immersive()
         startLockTaskSafe()
+        if (prefs.isDisplay()) {
+            enterDisplayKiosk()
+        } else {
+            stopDisplayServer()
+            findViewById<View>(R.id.idlePanel).visibility = View.GONE
+            findViewById<View>(R.id.video).visibility = View.GONE
+            enterTabletKiosk()
+        }
+    }
+
+    private fun enterTabletKiosk() {
         val last = prefs.lastHttpBase
         val controller = prefs.controllerUrl
         if (!last.isNullOrBlank() && !controller.isNullOrBlank()) {
@@ -179,8 +253,128 @@ class AppActivity : AppCompatActivity() {
         }
     }
 
+    private fun enterDisplayKiosk() {
+        beacons.stop()
+        ui.removeCallbacks(ping)
+        findViewById<View>(R.id.pairingPanel).visibility = View.GONE
+        ensureDisplayServer()
+        ui.removeCallbacks(refreshLan)
+        ui.post(refreshLan)
+        applyDisplayContent()
+    }
+
+    private fun ensureDisplayServer() {
+        if (contentStore == null) {
+            contentStore = ContentStore(this)
+        }
+        contentStore?.listener = { ui.post { applyDisplayContent() } }
+        if (contentServer == null) {
+            val server = ContentHttpServer(
+                store = contentStore!!,
+                assets = assets,
+                checkPin = { prefs.checkPin(it) },
+                exhibitId = prefs.exhibitId ?: "display-${prefs.tabletId().take(8)}",
+                displayName = prefs.displayName,
+                preferredPort = prefs.contentPort,
+            )
+            try {
+                server.start()
+                prefs.contentPort = server.port
+                if (prefs.exhibitId.isNullOrBlank()) {
+                    prefs.exhibitId = "display-${prefs.tabletId().take(8)}"
+                }
+                contentServer = server
+            } catch (e: Exception) {
+                findViewById<TextView>(R.id.idleMessage).text =
+                    "Content API failed to bind (${e.message})"
+            }
+        }
+    }
+
+    private fun stopDisplayServer() {
+        contentServer?.stop()
+        contentServer = null
+        contentStore?.listener = null
+        ui.removeCallbacks(refreshLan)
+    }
+
+    private fun applyDisplayContent() {
+        if (!prefs.isDisplay()) return
+        if (findViewById<View>(R.id.settingsPanel).visibility == View.VISIBLE) return
+        val store = contentStore ?: return
+        val state = store.snapshot()
+        val current = state.optJSONObject("current")
+        if (current == null) {
+            stopPlayback()
+            findViewById<View>(R.id.web).visibility = View.GONE
+            findViewById<View>(R.id.video).visibility = View.GONE
+            findViewById<View>(R.id.idlePanel).visibility = View.VISIBLE
+            updateLanLabels()
+            return
+        }
+        findViewById<View>(R.id.idlePanel).visibility = View.GONE
+        val type = current.optString("type")
+        if (type == "file") {
+            val id = current.optString("id")
+            val item = store.find(state, id)
+            val port = contentServer?.port ?: prefs.contentPort
+            val url = ContentHttpServer.localFileUrl(port, id)
+            if (ContentStore.isVideo(item?.optString("mime"))) {
+                playVideo(url)
+            } else {
+                openWeb(url, ping = false)
+            }
+        } else {
+            val url = current.optString("url")
+            if (url.isBlank()) {
+                findViewById<View>(R.id.idlePanel).visibility = View.VISIBLE
+                return
+            }
+            openWeb(url, ping = false)
+        }
+    }
+
+    private fun playVideo(url: String) {
+        findViewById<WebView>(R.id.web).apply {
+            loadUrl("about:blank")
+            visibility = View.GONE
+        }
+        val video = findViewById<VideoView>(R.id.video)
+        video.visibility = View.VISIBLE
+        video.setOnPreparedListener { mp ->
+            mp.isLooping = true
+            mp.start()
+        }
+        video.setVideoURI(Uri.parse(url))
+        video.start()
+        immersive()
+    }
+
+    private fun stopPlayback() {
+        try {
+            findViewById<VideoView>(R.id.video).stopPlayback()
+        } catch (_: Exception) {
+        }
+        findViewById<View>(R.id.video).visibility = View.GONE
+    }
+
+    private fun managerUrls(): String {
+        val port = contentServer?.port ?: prefs.contentPort
+        val hosts = LanHost.listIpv4()
+        if (hosts.isEmpty()) return "Waiting for LAN… port $port"
+        return hosts.joinToString("\n") { "http://$it:$port/" }
+    }
+
+    private fun updateLanLabels() {
+        val text = managerUrls()
+        findViewById<TextView>(R.id.idleApiUrl).text = text
+        findViewById<TextView>(R.id.settingsApiUrl).text = "Manager / content API:\n$text"
+    }
+
     private fun startScan() {
+        stopPlayback()
         findViewById<View>(R.id.web).visibility = View.GONE
+        findViewById<View>(R.id.idlePanel).visibility = View.GONE
         findViewById<View>(R.id.pairingPanel).visibility = View.VISIBLE
         setStatus("Listening for exhibit PCs…")
         beacons.start()
@@ -314,10 +508,16 @@ class AppActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     private fun openController(url: String) {
+        openWeb(url, ping = true)
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun openWeb(url: String, ping: Boolean) {
         beacons.stop()
+        stopPlayback()
         findViewById<View>(R.id.pairingPanel).visibility = View.GONE
+        findViewById<View>(R.id.idlePanel).visibility = View.GONE
         val web = findViewById<WebView>(R.id.web)
         web.visibility = View.VISIBLE
         web.webViewClient = WebViewClient()
@@ -328,8 +528,8 @@ class AppActivity : AppCompatActivity() {
         web.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         web.settings.allowFileAccess = false
         web.loadUrl(url)
-        ui.removeCallbacks(ping)
-        ui.post(ping)
+        ui.removeCallbacks(this.ping)
+        if (ping) ui.post(this.ping)
         immersive()
     }
 
@@ -384,22 +584,32 @@ class AppActivity : AppCompatActivity() {
     }
 
     private fun staffMenu() {
+        val items = if (prefs.isDisplay()) {
+            arrayOf("Resume exhibit", "Settings", "Clear content", "Exit app")
+        } else {
+            arrayOf("Resume exhibit", "Settings", "Unpair tablet", "Exit app")
+        }
         AlertDialog.Builder(this)
             .setTitle("Staff")
-            .setItems(
-                arrayOf("Resume exhibit", "Settings", "Unpair tablet", "Exit app"),
-            ) { _, which ->
+            .setItems(items) { _, which ->
                 when (which) {
                     0 -> {
                         startLockTaskSafe()
                         immersive()
+                        if (prefs.isDisplay()) applyDisplayContent()
                     }
                     1 -> showSettings()
                     2 -> {
-                        prefs.unpair()
-                        findViewById<WebView>(R.id.web).loadUrl("about:blank")
-                        startScan()
-                        startLockTaskSafe()
+                        if (prefs.isDisplay()) {
+                            contentStore?.clear()
+                            startLockTaskSafe()
+                            applyDisplayContent()
+                        } else {
+                            prefs.unpair()
+                            findViewById<WebView>(R.id.web).loadUrl("about:blank")
+                            startScan()
+                            startLockTaskSafe()
+                        }
                     }
                     3 -> {
                         try {

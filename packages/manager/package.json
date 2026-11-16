@@ -1,0 +1,10 @@
+{
+  "name": "@exhibit-connect/manager",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./manager.html",
+    "./manager.html": "./manager.html",
+    "./manager.js": "./manager.js"
+  }
+}

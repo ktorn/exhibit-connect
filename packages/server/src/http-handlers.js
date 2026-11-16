@@ -5,34 +5,10 @@ import {
   isTabletConnected,
   verifyPairingCode,
 } from "@exhibit-connect/core";
+import { corsHeaders, json, readAuthToken, readJsonBody } from "./http-util.js";
+import { createContentHandlers } from "./content-handlers.js";
 
 const PREFIX = "/__exhibit-connect/v1";
-
-/**
- * @param {import('node:http').IncomingMessage} req
- */
-async function readJsonBody(req) {
-  const chunks = [];
-  for await (const chunk of req) {
-    chunks.push(chunk);
-  }
-  const text = Buffer.concat(chunks).toString("utf8").trim();
-  if (!text) return {};
-  return JSON.parse(text);
-}
-
-/**
- * @param {import('node:http').ServerResponse} res
- * @param {number} status
- * @param {unknown} body
- */
-function json(res, status, body) {
-  res.writeHead(status, {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-  });
-  res.end(JSON.stringify(body));
-}
 
 /**
  * @param {object} ctx
@@ -46,7 +22,12 @@ export function createExhibitConnectHandlers(ctx) {
     setActivePairing,
     projectionHub,
     adminToken,
+    contentStore,
   } = ctx;
+
+  const handleContent = contentStore
+    ? createContentHandlers({ config, getLanHost, contentStore, adminToken })
+    : null;
 
   async function statusPayload() {
     const persisted = await stateStore.get();
@@ -54,10 +35,16 @@ export function createExhibitConnectHandlers(ctx) {
     const now = Date.now();
     const lanHost = await getLanHost();
     const httpBase = lanHost ? `http://${lanHost}:${config.httpPort}` : null;
+    const content = contentStore
+      ? decorateLite(await contentStore.get())
+      : undefined;
     return {
       v: 1,
       exhibitId: config.exhibitId,
       displayName: config.displayName,
+      role: "host",
+      capabilities: contentStore ? ["pairing", "content"] : ["pairing"],
+      auth: { mutate: adminToken ? "token" : "none" },
       paired: Boolean(persisted.pairedTabletId),
       pairedTabletId: persisted.pairedTabletId,
       discoveryEnabled: !persisted.pairedTabletId,
@@ -68,6 +55,7 @@ export function createExhibitConnectHandlers(ctx) {
       lanHost,
       httpBase,
       controllerPath: config.controllerPath ?? "/controller.html",
+      content,
     };
   }
 
@@ -84,11 +72,7 @@ export function createExhibitConnectHandlers(ctx) {
 
     try {
       if (req.method === "OPTIONS") {
-        res.writeHead(204, {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        });
+        res.writeHead(204, corsHeaders());
         res.end();
         return true;
       }
@@ -103,10 +87,14 @@ export function createExhibitConnectHandlers(ctx) {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
           Connection: "keep-alive",
-          "Access-Control-Allow-Origin": "*",
+          ...corsHeaders(),
         });
         res.write("\n");
         projectionHub.subscribe(res);
+        return true;
+      }
+
+      if (handleContent && (await handleContent(req, res, path))) {
         return true;
       }
 
@@ -185,8 +173,9 @@ export function createExhibitConnectHandlers(ctx) {
 
       if (req.method === "POST" && path === "/pair/reset") {
         if (adminToken) {
-          const token = typeof body.adminToken === "string" ? body.adminToken : "";
-          if (token !== adminToken) {
+          const fromBody = typeof body.adminToken === "string" ? body.adminToken : "";
+          const fromHeader = readAuthToken(req).token;
+          if (fromBody !== adminToken && fromHeader !== adminToken) {
             json(res, 403, { error: "forbidden", message: "Invalid admin token" });
             return true;
           }
@@ -211,6 +200,13 @@ export function createExhibitConnectHandlers(ctx) {
       });
       return true;
     }
+  };
+}
+
+function decorateLite(state) {
+  return {
+    current: state.current ?? null,
+    itemCount: Array.isArray(state.items) ? state.items.length : 0,
   };
 }
 

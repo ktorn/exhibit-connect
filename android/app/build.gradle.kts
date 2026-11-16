@@ -31,6 +31,18 @@ android {
     }
 }
 
+val managerSource = rootProject.projectDir.resolve("../packages/manager")
+val copyManagerAssets by tasks.registering(Copy::class) {
+    from(managerSource) {
+        include("manager.html", "manager.js")
+    }
+    into(layout.projectDirectory.dir("src/main/assets/manager"))
+}
+
+tasks.named("preBuild").configure {
+    dependsOn(copyManagerAssets)
+}
+
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")

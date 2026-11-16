@@ -1,13 +1,16 @@
 # Exhibit Connect kiosk APK
 
-Fullscreen lock-task tablet app: UDP discovery, pairing code on the **main projection**, last-IP reconnect, WebView controller.
+Fullscreen lock-task app. First run (or Settings): **Tablet** or **Display**.
+
+- **Tablet:** UDP discovery, pairing code on the **main projection**, last-IP reconnect, WebView controller.
+- **Display:** no pairing. Local HTTP content API (default port 41235). Shows a URL or uploaded video/html. Idle screen lists `http://<lan>:41235/` for the LAN manager. Can also load a PC exhibit `httpBase` as the current URL (dumb display).
 
 ## Staff PIN and hidden exit
 
 1. **First launch:** set a 4–8 digit PIN (not shown to visitors).
 2. App stays fullscreen; Back does nothing.
 3. **Exit:** five taps in the **top-right** corner (same place the old controller fullscreen gesture used), then enter the PIN.
-4. Staff menu: Resume / **Settings** / Unpair / Exit app.
+4. Staff menu: Resume / **Settings** / Unpair (tablet) or Clear content (display) / Exit app.
 
 **Settings (and first run):** force **landscape / landscape flipped / portrait / portrait flipped**. The stand is fixed, so the accelerometer is not used.
 

@@ -28,6 +28,8 @@ const VENDOR = {
   ),
   "/tablet-pair.html": path.join(PACKAGES, "tablet-web/tablet-pair.html"),
   "/tablet-pair.js": path.join(PACKAGES, "tablet-web/tablet-pair.js"),
+  "/manager.html": path.join(PACKAGES, "manager/manager.html"),
+  "/manager.js": path.join(PACKAGES, "manager/manager.js"),
 };
 
 const exhibitConnect = createExhibitConnectService({

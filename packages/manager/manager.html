@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exhibit Connect — content</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #111;
+        color: #eee;
+        margin: 0;
+        padding: 1.25rem;
+        max-width: 42rem;
+      }
+      h1 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin: 0 0 0.35rem;
+      }
+      p.lead,
+      .hint,
+      #status {
+        color: #aaa;
+        font-size: 0.95rem;
+      }
+      label {
+        display: block;
+        margin-top: 0.85rem;
+        font-size: 0.85rem;
+        color: #bbb;
+      }
+      input[type="text"],
+      input[type="password"],
+      input[type="url"] {
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 0.25rem;
+        padding: 0.5rem 0.65rem;
+        font-size: 1rem;
+        background: #1c1c1c;
+        color: #eee;
+        border: 1px solid #333;
+        border-radius: 4px;
+      }
+      button,
+      input[type="file"] {
+        font-size: 1rem;
+        margin-top: 0.6rem;
+        margin-right: 0.4rem;
+      }
+      button {
+        padding: 0.45rem 0.8rem;
+        cursor: pointer;
+      }
+      #panel {
+        display: none;
+        margin-top: 1.5rem;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0.75rem 0;
+      }
+      li {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        padding: 0.55rem 0;
+        border-top: 1px solid #2a2a2a;
+        font-size: 0.95rem;
+      }
+      li.current {
+        color: #9fd;
+      }
+      li span {
+        flex: 1;
+        word-break: break-all;
+      }
+      .err {
+        color: #f88;
+      }
+      .ok {
+        color: #9c9;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Exhibit content</h1>
+    <p class="lead">
+      Talks to one display host on the LAN (PC sidecar or Android kiosk). Not a
+      central library. Fleet remote reach stays in exhibition-watchdog.
+    </p>
+
+    <label for="host">Host URL</label>
+    <input id="host" type="url" placeholder="http://10.20.85.226:41235" />
+
+    <label for="secret">PIN or admin token (required when the host asks)</label>
+    <input id="secret" type="password" autocomplete="off" />
+
+    <div class="row">
+      <button type="button" id="connect">Connect</button>
+    </div>
+    <p id="status">Not connected.</p>
+
+    <section id="panel">
+      <h2>Now showing</h2>
+      <p id="current">None</p>
+
+      <label for="url">Show an http(s) URL</label>
+      <input id="url" type="url" placeholder="http://10.20.85.226:8899/" />
+      <button type="button" id="show-url">Show URL</button>
+
+      <label for="file">Upload a file (video, image, html)</label>
+      <input id="file" type="file" />
+      <button type="button" id="upload">Upload and show</button>
+
+      <h2>On this device</h2>
+      <ul id="list"></ul>
+      <button type="button" id="clear-current">Stop showing</button>
+    </section>
+
+    <script src="manager.js"></script>
+  </body>
+</html>

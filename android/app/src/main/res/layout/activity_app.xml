@@ -76,6 +76,35 @@
                     android:textColor="#EEEEEE" />
             </RadioGroup>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Device role"
+                android:textColor="#AAAAAA" />
+
+            <RadioGroup
+                android:id="@+id/setupRole"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp">
+
+                <RadioButton
+                    android:id="@+id/roleTablet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Tablet (pairs to an exhibit PC)"
+                    android:textColor="#EEEEEE" />
+
+                <RadioButton
+                    android:id="@+id/roleDisplay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Display (web/video kiosk, no tablet required)"
+                    android:textColor="#EEEEEE" />
+            </RadioGroup>
+
             <EditText
                 android:id="@+id/pin1"
                 android:layout_width="240dp"
@@ -241,6 +270,65 @@
                     android:textColor="#EEEEEE" />
             </RadioGroup>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Device role"
+                android:textColor="#AAAAAA" />
+
+            <RadioGroup
+                android:id="@+id/settingsRole"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <RadioButton
+                    android:id="@+id/setRoleTablet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tablet"
+                    android:textColor="#EEEEEE" />
+
+                <RadioButton
+                    android:id="@+id/setRoleDisplay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Display"
+                    android:textColor="#EEEEEE" />
+            </RadioGroup>
+
+            <LinearLayout
+                android:id="@+id/displaySettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/settingsApiUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:textColor="#9FD"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Show this URL (PC exhibit or any http page)"
+                    android:textColor="#AAAAAA" />
+
+                <EditText
+                    android:id="@+id/displayUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="http://10.20.85.226:8899/"
+                    android:inputType="textUri"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#666666" />
+            </LinearLayout>
+
             <Button
                 android:id="@+id/saveSettings"
                 android:layout_width="wrap_content"
@@ -250,10 +338,53 @@
         </LinearLayout>
     </ScrollView>
 
+    <LinearLayout
+        android:id="@+id/idlePanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Display kiosk"
+            android:textColor="#EEEEEE"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/idleMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:text="No content yet. Staff: five taps top-right, or open the manager URL on a laptop."
+            android:textColor="#AAAAAA"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/idleApiUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textColor="#9FD"
+            android:textSize="16sp" />
+    </LinearLayout>
+
     <WebView
         android:id="@+id/web"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <VideoView
+        android:id="@+id/video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
         android:visibility="gone" />
 
     <View

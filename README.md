@@ -1,16 +1,18 @@
 # exhibit-connect
 
-LAN pairing and reconnect for gallery tablets and exhibit PCs. One tablet per PC; pairing code on the main projection; tablet stores last IP and falls back to UDP beacons when unreachable.
+LAN pairing and reconnect for gallery tablets and exhibit PCs, plus a per-device content API for simple displays. One tablet per host when a controller is used; pairing code on the main projection; tablet stores last IP and falls back to UDP beacons when unreachable.
 
-This repo is **not** fleet ops (WireGuard, remote SSH). See [exhibition-watchdog](https://github.com/ktorn/exhibition-watchdog) for that.
+This repo is **not** fleet ops (WireGuard, remote SSH) and **not** a central CMS. See [exhibition-watchdog](https://github.com/ktorn/exhibition-watchdog) for remote reach. Content lives on each host; `@exhibit-connect/manager` is a LAN client.
 
 ## Packages
 
 | Package | Role |
 | --- | --- |
-| `@exhibit-connect/core` | Protocol types, beacon codec, pairing state |
-| `@exhibit-connect/server` | HTTP pairing API + UDP beacon loop |
+| `@exhibit-connect/core` | Protocol types, beacon codec, pairing state, content helpers |
+| `@exhibit-connect/server` | HTTP pairing + content API + UDP beacon loop |
 | `@exhibit-connect/projection` | Browser overlay for pairing code on the main display |
+| `@exhibit-connect/manager` | LAN staff UI for per-device URL/file content |
+| `@exhibit-connect/tablet-web` | Web tablet pairing (dev / Playwright) |
 
 ## Quick start (sidecar)
 
@@ -35,9 +37,16 @@ npx playwright test   # Invisible Violence projection + tablet UI (Chromium)
 
 Local fixture: `examples/invisible-violence` (student piece without large videos).
 
+Sidecar also serves the content manager at `http://<lan>:41235/`.
+
 ## Android kiosk
 
-Lock-task tablet app: first-run staff PIN, forced stand orientation (no sensor), pairing code on the **main projection**, last-IP reconnect, WebView controller. Back does nothing. **Exit:** five taps **top-right**, then the PIN. Staff menu: Resume / Settings / Unpair / Exit app.
+One APK, two roles (first run, or Settings):
+
+- **Tablet** — pairing code on the **main projection**, last-IP reconnect, WebView controller. Staff: Resume / Settings / Unpair / Exit.
+- **Display** — standalone web/video kiosk; skips pairing; LAN content API (default port 41235). Staff: Resume / Settings / Clear content / Exit. Point the manager UI at the URL on the idle screen, or load a PC `httpBase` as the current URL.
+
+First-run staff PIN, forced stand orientation (no sensor). Back does nothing. **Exit:** five taps **top-right**, then the PIN.
 
 More detail: [android/README.md](./android/README.md).
 

@@ -2,10 +2,12 @@ import http from "node:http";
 import path from "node:path";
 import os from "node:os";
 import { createStateStore } from "./state-store.js";
+import { createContentStore } from "./content-store.js";
 import { createProjectionHub } from "./projection-hub.js";
 import { createExhibitConnectHandlers } from "./http-handlers.js";
 import { startBeaconLoop } from "./beacon-loop.js";
 import { pickLanHost } from "./lan-host.js";
+import { tryServeManager } from "./manager-files.js";
 
 /**
  * @typedef {import('@exhibit-connect/core').ExhibitConfig & {
@@ -14,6 +16,7 @@ import { pickLanHost } from "./lan-host.js";
  *   adminToken?: string;
  *   beaconPort?: number;
  *   pairingPort?: number;
+ *   maxUploadBytes?: number;
  * }} ExhibitConnectOptions
  */
 
@@ -26,6 +29,7 @@ export function createExhibitConnectService(options) {
     displayName: options.displayName,
     student: options.student,
     httpPort: options.httpPort,
+    apiPort: options.pairingPort ?? options.httpPort,
     controllerPath: options.controllerPath ?? "/controller.html",
   };
 
@@ -37,6 +41,10 @@ export function createExhibitConnectService(options) {
     );
   const stateFile = path.join(stateDir, `${config.exhibitId}.json`);
   const stateStore = createStateStore(stateFile);
+  const contentStore = createContentStore({
+    dir: path.join(stateDir, "content", config.exhibitId),
+    maxUploadBytes: options.maxUploadBytes,
+  });
   const projectionHub = createProjectionHub();
 
   /** @type {import('@exhibit-connect/core').ActivePairing | null} */
@@ -56,6 +64,7 @@ export function createExhibitConnectService(options) {
     },
     projectionHub,
     adminToken: options.adminToken,
+    contentStore,
   });
 
   const pairingPort = options.pairingPort ?? options.httpPort;
@@ -79,6 +88,7 @@ export function createExhibitConnectService(options) {
   return {
     config,
     stateStore,
+    contentStore,
     projectionHub,
     handleRequest: handle,
     stop() {
@@ -99,16 +109,18 @@ export function startSidecarServer(options) {
 
   const server = http.createServer(async (req, res) => {
     const handled = await service.handleRequest(req, res);
-    if (!handled) {
-      res.writeHead(404);
-      res.end("Not found");
-    }
+    if (handled) return;
+    const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
+    if (req.method === "GET" && tryServeManager(pathname, res)) return;
+    res.writeHead(404);
+    res.end("Not found");
   });
 
   server.listen(port, "0.0.0.0", () => {
     console.log(
       `[exhibit-connect] sidecar listening on :${port} exhibit=${options.exhibitId}`,
     );
+    console.log(`[exhibit-connect] content manager http://<lan>:${port}/`);
   });
 
   return { server, service };

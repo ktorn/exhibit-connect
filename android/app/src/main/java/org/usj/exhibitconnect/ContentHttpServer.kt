@@ -70,7 +70,7 @@ class ContentHttpServer(
     }
 
     private fun handle(socket: Socket) {
-        socket.soTimeout = 30_000
+        socket.soTimeout = 60_000
         try {
             val input = BufferedInputStream(socket.getInputStream())
             val headerBytes = readHeaders(input)
@@ -93,8 +93,10 @@ class ContentHttpServer(
                     headers[line.substring(0, c).trim().lowercase()] = line.substring(c + 1).trim()
                 }
             }
-            val pathRaw = uri.substringBefore('?')
-            val path = URLDecoder.decode(pathRaw, "UTF-8")
+            val path = URLDecoder.decode(uri.substringBefore('?'), "UTF-8")
+            if (method == "POST" && stripPrefix(path) == "/content/files") {
+                socket.soTimeout = 0
+            }
             val out = socket.getOutputStream()
             route(method, path, headers, input, out)
         } catch (e: Exception) {

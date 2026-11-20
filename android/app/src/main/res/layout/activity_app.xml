@@ -316,7 +316,23 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Show this URL (PC exhibit or any http page)"
+                    android:text="Screen name (shown on the laptop manager)"
+                    android:textColor="#AAAAAA" />
+
+                <EditText
+                    android:id="@+id/displayName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Lobby map"
+                    android:inputType="text"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#666666" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Show this URL (prefer pasting from a laptop: npm run manager)"
                     android:textColor="#AAAAAA" />
 
                 <EditText
@@ -360,7 +376,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:gravity="center"
-            android:text="No content yet. Staff: five taps top-right, or open the manager URL on a laptop."
+            android:text="No content yet. On a laptop (same Wi‑Fi): npm run manager → paste the URL there. Do not type long URLs on this screen."
             android:textColor="#AAAAAA"
             android:textSize="16sp" />
 

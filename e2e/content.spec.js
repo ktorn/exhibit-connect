@@ -11,7 +11,7 @@ test.describe("per-device content API", () => {
     expect(body.role).toBe("host");
 
     await page.goto(`${PREFIX}/manager`);
-    await expect(page.getByRole("heading", { name: "Exhibit content" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Exhibit signage" })).toBeVisible();
     await page.getByRole("button", { name: "Connect" }).click();
     await expect(page.locator("#status")).toContainText("Connected");
   });

@@ -163,7 +163,7 @@ class ContentStore(context: Context) {
     }
 
     companion object {
-        const val MAX_UPLOAD_BYTES = 512L * 1024L * 1024L
+        const val MAX_UPLOAD_BYTES = 6L * 1024L * 1024L * 1024L
         private val ALLOWED = setOf(
             "video/mp4", "video/webm", "video/quicktime", "video/ogg",
             "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",

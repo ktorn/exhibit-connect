@@ -39,6 +39,15 @@ Local fixture: `examples/invisible-violence` (student piece without large videos
 
 Sidecar also serves the content manager at `http://<lan>:41235/`.
 
+**Signage remote (laptop on gallery Wi‑Fi):**
+
+```bash
+npm run manager
+# open http://127.0.0.1:4173/
+```
+
+Display kiosks advertise themselves. Click a screen, enter the staff PIN, paste a Figma/exhibit URL. Do not type URLs on the kiosk. Off-site control is exhibition-watchdog, not this repo.
+
 ## Android kiosk
 
 One APK, two roles (first run, or Settings):
@@ -54,9 +63,9 @@ More detail: [android/README.md](./android/README.md).
 
 The APK contains **no secrets** (no tokens, passwords, or SSH keys). The staff PIN is chosen on first launch and stored only on that tablet.
 
-On the tablet, open Chrome and download:
+On the tablet, open Chrome and download the APK from the latest **[GitHub Release](https://github.com/ktorn/exhibit-connect/releases/latest)**. Direct file:
 
-**[exhibit-connect-debug.apk](https://github.com/ktorn/exhibit-connect/raw/main/android/apk/exhibit-connect-debug.apk)**
+**[exhibit-connect-debug.apk](https://github.com/ktorn/exhibit-connect/releases/latest/download/exhibit-connect-debug.apk)**
 
 Allow **Install unknown apps** for Chrome, then install. This is a debug-signed build (gallery sideload, not Play Store).
 

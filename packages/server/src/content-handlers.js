@@ -67,6 +67,8 @@ export function createContentHandlers(ctx) {
 
     if (req.method === "POST" && path === "/content/files") {
       if (!requireAuth(req, res)) return true;
+      req.setTimeout(0);
+      res.setTimeout(0);
       const ct = String(req.headers["content-type"] || "");
       if (!ct.toLowerCase().includes("multipart/form-data")) {
         json(res, 415, { error: "unsupported_media", message: "multipart/form-data required" });

@@ -36,6 +36,7 @@ class AppActivity : AppCompatActivity() {
     private var tapReset: Runnable? = null
     private var contentStore: ContentStore? = null
     private var contentServer: ContentHttpServer? = null
+    private var contentBeacon: BeaconBroadcaster? = null
     private val ping = object : Runnable {
         override fun run() {
             pingTablet()
@@ -177,6 +178,7 @@ class AppActivity : AppCompatActivity() {
             if (prefs.isDisplay()) View.VISIBLE else View.GONE
         updateLanLabels()
         val current = contentStore?.snapshot()?.optJSONObject("current")
+        findViewById<EditText>(R.id.displayName).setText(prefs.displayName)
         if (current?.optString("type") == "url") {
             findViewById<EditText>(R.id.displayUrl).setText(current.optString("url"))
         }
@@ -194,6 +196,8 @@ class AppActivity : AppCompatActivity() {
         val newRole = roleFrom(R.id.settingsRole)
         val roleChanged = newRole != prefs.role
         prefs.role = newRole
+        val name = findViewById<EditText>(R.id.displayName).text.toString().trim()
+        if (name.isNotEmpty()) prefs.displayName = name
         val url = findViewById<EditText>(R.id.displayUrl).text.toString().trim()
         findViewById<View>(R.id.settingsPanel).visibility = View.GONE
         applyOrientation()
@@ -289,9 +293,34 @@ class AppActivity : AppCompatActivity() {
                     "Content API failed to bind (${e.message})"
             }
         }
+        if (contentServer != null && contentBeacon == null) {
+            startContentBeacon()
+        }
+    }
+
+    private fun startContentBeacon() {
+        contentBeacon?.stop()
+        contentBeacon = BeaconBroadcaster {
+            val host = LanHost.pick() ?: return@BeaconBroadcaster null
+            val port = contentServer?.port ?: prefs.contentPort
+            val id = prefs.exhibitId ?: "display-${prefs.tabletId().take(8)}"
+            JSONObject()
+                .put("v", 1)
+                .put("exhibitId", id)
+                .put("displayName", prefs.displayName)
+                .put("httpPort", port)
+                .put("lanHost", host)
+                .put("mode", "content")
+                .put("role", "display")
+                .put("httpBase", "http://$host:$port")
+                .put("capabilities", org.json.JSONArray().put("content"))
+        }
+        contentBeacon?.start()
     }
 
     private fun stopDisplayServer() {
+        contentBeacon?.stop()
+        contentBeacon = null
         contentServer?.stop()
         contentServer = null
         contentStore?.listener = null
@@ -404,6 +433,9 @@ class AppActivity : AppCompatActivity() {
     }
 
     private fun onBeacon(beacon: Beacon) {
+        if (beacon.mode != "discovery" && beacon.mode != "reconnect") {
+            return
+        }
         val ours = prefs.exhibitId
         if (ours != null && beacon.exhibitId != ours && beacon.mode != "discovery") {
             return

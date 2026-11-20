@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Exhibit Connect — content</title>
+    <title>Exhibit Connect — signage</title>
     <style>
       :root {
         color-scheme: dark;
@@ -60,6 +60,10 @@
         display: none;
         margin-top: 1.5rem;
       }
+      #transfers {
+        display: none;
+        margin-top: 1.5rem;
+      }
       ul {
         list-style: none;
         padding: 0;
@@ -92,19 +96,49 @@
         gap: 0.4rem;
         align-items: center;
       }
+      #screens button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        margin: 0.35rem 0;
+      }
+      .xfer {
+        border-top: 1px solid #2a2a2a;
+        padding: 0.75rem 0;
+      }
+      .xfer progress {
+        display: block;
+        width: 100%;
+        margin-top: 0.4rem;
+        height: 0.85rem;
+      }
+      .xfer-meta {
+        font-size: 0.9rem;
+        color: #ccc;
+      }
     </style>
   </head>
   <body>
-    <h1>Exhibit content</h1>
+    <h1>Exhibit signage</h1>
     <p class="lead">
-      Talks to one display host on the LAN (PC sidecar or Android kiosk). Not a
-      central library. Fleet remote reach stays in exhibition-watchdog.
+      Control gallery screens from this laptop on the same Wi‑Fi. Paste URLs
+      here — do not type them on the kiosk. Off-site remote admin stays in
+      exhibition-watchdog.
+    </p>
+    <p class="hint">
+      On a staff laptop: <code>npm run manager</code> then open
+      <code>http://127.0.0.1:4173/</code>. Start an upload, then switch screens
+      — transfers keep running.
     </p>
 
-    <label for="host">Host URL</label>
+    <h2>LAN screens</h2>
+    <ul id="screens"></ul>
+    <p id="screens-empty" class="hint">Waiting for beacons…</p>
+
+    <label for="host">Or host URL</label>
     <input id="host" type="url" placeholder="http://10.20.85.226:41235" />
 
-    <label for="secret">PIN or admin token (required when the host asks)</label>
+    <label for="secret">Staff PIN (Android) or admin token (PC)</label>
     <input id="secret" type="password" autocomplete="off" />
 
     <div class="row">
@@ -112,15 +146,21 @@
     </div>
     <p id="status">Not connected.</p>
 
+    <section id="transfers">
+      <h2>Transfers</h2>
+      <p class="hint">One upload per screen at a time. Switching screens does not cancel.</p>
+      <div id="transfer-list"></div>
+    </section>
+
     <section id="panel">
       <h2>Now showing</h2>
       <p id="current">None</p>
 
-      <label for="url">Show an http(s) URL</label>
-      <input id="url" type="url" placeholder="http://10.20.85.226:8899/" />
+      <label for="url">Show an http(s) URL (Figma prototype, exhibit page)</label>
+      <input id="url" type="url" placeholder="https://www.figma.com/proto/…" />
       <button type="button" id="show-url">Show URL</button>
 
-      <label for="file">Upload a file (video, image, html)</label>
+      <label for="file">Upload a file (video, image, html; up to 6 GB)</label>
       <input id="file" type="file" />
       <button type="button" id="upload">Upload and show</button>
 

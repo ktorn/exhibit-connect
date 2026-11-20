@@ -1,4 +1,5 @@
-export const MAX_UPLOAD_BYTES = 512 * 1024 * 1024;
+/** 6 GiB — exhibition loops; still bounded for kiosk storage. */
+export const MAX_UPLOAD_BYTES = 6 * 1024 * 1024 * 1024;
 export const API_PREFIX = "/__exhibit-connect/v1";
 
 const MIME_BY_EXT = {

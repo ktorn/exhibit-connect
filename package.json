@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "manager": "node packages/manager/serve.mjs"
   },
   "devDependencies": {
     "@exhibit-connect/core": "*",

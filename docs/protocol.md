@@ -22,7 +22,7 @@ Devices are optional roles. Pairing is unchanged when a tablet is used.
 | **Controller** | Optional gallery tablet. One controller per host. |
 | **Manager** | Staff browser on the LAN that calls the per-device content API. Not a cloud catalog. Watchdog may wrap this later. |
 
-Standalone displays **do not** send pairing beacons. Android **does not** host pairing/UDP/SSE in this version (deferred). Interactive pieces still use a PC host.
+Standalone displays advertise with UDP `mode: content` so the laptop manager can find them. They do **not** accept tablet pairing. Android **does not** host pairing HTTP/SSE (deferred). Interactive tablet pieces still use a PC host.
 
 The kiosk APK picks **Tablet** vs **Display** on first run (same package `org.usj.exhibitconnect`).
 
@@ -53,7 +53,12 @@ The kiosk APK picks **Tablet** vs **Display** on first run (same package `org.us
 | --- | --- |
 | `discovery` | No paired tablet; new pairing allowed |
 | `reconnect` | Paired tablet absent; no new pairing |
-| *(absent)* | Do not broadcast (paired tablet recently active) |
+| `content` | Standalone display / signage; manager-only, tablets ignore |
+| *(absent / silent)* | Do not broadcast (paired tablet recently active) |
+
+Optional `role` (`host` | `display`) and `capabilities` (e.g. `["content"]`, `["pairing","content"]`). Content beacons omit `controllerPath`.
+
+Staff laptop: `npm run manager` (UDP listen + UI on port 4173).
 
 `httpBase` is the URL the tablet should open for the controller (scheme + host + port, no path).
 
@@ -151,7 +156,7 @@ Clears paired tablet and re-enters discovery. For gallery staff / SSH maintenanc
 
 Per-device media. There is **no** central CMS; each host stores its own files. Staff UI: `@exhibit-connect/manager` (also `GET /__exhibit-connect/v1/manager`). Sidecar also serves `/` as the manager page.
 
-Upload cap: 512 MiB. Allowed types: mp4/webm/mov, images, html/css/js/json/plain.
+Upload cap: 6 GiB. Allowed types: mp4/webm/mov, images, html/css/js/json/plain.
 
 ### `GET /content`
 
@@ -163,7 +168,7 @@ Upload cap: 512 MiB. Allowed types: mp4/webm/mov, images, html/css/js/json/plain
     { "id": "uuid", "type": "url", "name": "Piece", "url": "http://10.20.85.226:8899/" }
   ],
   "current": { "type": "url", "id": "uuid", "url": "http://10.20.85.226:8899/" },
-  "maxUploadBytes": 536870912
+  "maxUploadBytes": 6442450944
 }
 ```
 

@@ -33,6 +33,8 @@ export function startBeaconLoop(opts) {
       lanHost,
       mode,
       pairingBase,
+      role: "host",
+      capabilities: ["pairing", "content"],
     });
     const buf = beaconToBuffer(payload);
     socket.send(buf, port, "255.255.255.255", () => {});

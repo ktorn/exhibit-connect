@@ -1,4 +1,4 @@
-/** @typedef {'discovery' | 'reconnect'} BeaconMode */
+/** @typedef {'discovery' | 'reconnect' | 'content'} BeaconMode */
 
 /**
  * @typedef {Object} ExhibitConfig
@@ -7,6 +7,8 @@
  * @property {string} [student]
  * @property {number} httpPort
  * @property {string} [controllerPath]
+ * @property {string} [role]
+ * @property {string[]} [capabilities]
  */
 
 /**
@@ -16,15 +18,19 @@
  * @property {string} displayName
  * @property {string} [student]
  * @property {number} httpPort
- * @property {string} controllerPath
+ * @property {string} [controllerPath]
  * @property {string} lanHost
  * @property {BeaconMode} mode
  * @property {string} httpBase
- * @property {string} [pairingBase] HTTP API base if different from exhibit server
+ * @property {string} [pairingBase]
+ * @property {string} [role]
+ * @property {string[]} [capabilities]
  */
 
 export const BEACON_PROTOCOL_VERSION = 1;
 export const DEFAULT_BEACON_PORT = 41234;
+
+const MODES = new Set(["discovery", "reconnect", "content"]);
 
 /**
  * @param {unknown} raw
@@ -47,24 +53,36 @@ export function decodeBeacon(raw) {
   if (typeof o.httpPort !== "number" || o.httpPort <= 0) return null;
   if (typeof o.lanHost !== "string" || !o.lanHost) return null;
   if (typeof o.httpBase !== "string" || !o.httpBase) return null;
-  if (o.mode !== "discovery" && o.mode !== "reconnect") return null;
-  const controllerPath =
-    typeof o.controllerPath === "string" && o.controllerPath.startsWith("/")
-      ? o.controllerPath
-      : "/controller.html";
+  if (typeof o.mode !== "string" || !MODES.has(o.mode)) return null;
+  /** @type {BeaconPayload} */
   const out = {
     v: 1,
     exhibitId: o.exhibitId,
     displayName: o.displayName,
     student: typeof o.student === "string" ? o.student : undefined,
     httpPort: o.httpPort,
-    controllerPath,
     lanHost: o.lanHost,
-    mode: o.mode,
+    mode: /** @type {BeaconMode} */ (o.mode),
     httpBase: o.httpBase.replace(/\/$/, ""),
   };
+  if (o.mode === "content") {
+    if (typeof o.controllerPath === "string" && o.controllerPath.startsWith("/")) {
+      out.controllerPath = o.controllerPath;
+    }
+  } else {
+    out.controllerPath =
+      typeof o.controllerPath === "string" && o.controllerPath.startsWith("/")
+        ? o.controllerPath
+        : "/controller.html";
+  }
   if (typeof o.pairingBase === "string" && o.pairingBase) {
     out.pairingBase = o.pairingBase.replace(/\/$/, "");
+  }
+  if (typeof o.role === "string" && o.role) {
+    out.role = o.role;
+  }
+  if (Array.isArray(o.capabilities)) {
+    out.capabilities = o.capabilities.filter((c) => typeof c === "string");
   }
   return out;
 }
@@ -74,7 +92,6 @@ export function decodeBeacon(raw) {
  * @returns {BeaconPayload}
  */
 export function encodeBeacon(input) {
-  const controllerPath = input.controllerPath ?? "/controller.html";
   const httpBase = `http://${input.lanHost}:${input.httpPort}`;
   /** @type {BeaconPayload} */
   const payload = {
@@ -83,14 +100,18 @@ export function encodeBeacon(input) {
     displayName: input.displayName,
     student: input.student,
     httpPort: input.httpPort,
-    controllerPath,
     lanHost: input.lanHost,
     mode: input.mode,
     httpBase,
   };
+  if (input.mode !== "content") {
+    payload.controllerPath = input.controllerPath ?? "/controller.html";
+  }
   if (input.pairingBase) {
     payload.pairingBase = input.pairingBase.replace(/\/$/, "");
   }
+  if (input.role) payload.role = input.role;
+  if (input.capabilities?.length) payload.capabilities = input.capabilities;
   return payload;
 }
 
@@ -100,4 +121,16 @@ export function encodeBeacon(input) {
  */
 export function beaconToBuffer(payload) {
   return Buffer.from(JSON.stringify(payload), "utf8");
+}
+
+/** Pairing tablets should ignore these. */
+export function isPairingBeacon(payload) {
+  return payload.mode === "discovery" || payload.mode === "reconnect";
+}
+
+export function isContentBeacon(payload) {
+  return (
+    payload.mode === "content" ||
+    (Array.isArray(payload.capabilities) && payload.capabilities.includes("content"))
+  );
 }

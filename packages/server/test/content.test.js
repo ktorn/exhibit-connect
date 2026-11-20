@@ -93,7 +93,7 @@ describe("content API", () => {
 
     const page = await req(httpPort, "GET", `${PREFIX}/manager`);
     assert.equal(page.status, 200);
-    assert.match(page.buf.toString(), /Exhibit content/);
+    assert.match(page.buf.toString(), /Exhibit signage/);
   });
 
   it("rejects mutate without token, then upload/show/delete", async () => {

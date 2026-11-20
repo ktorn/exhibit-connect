@@ -4,6 +4,8 @@ export {
   decodeBeacon,
   encodeBeacon,
   beaconToBuffer,
+  isPairingBeacon,
+  isContentBeacon,
 } from "./beacon.js";
 
 export {

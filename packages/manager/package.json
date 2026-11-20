@@ -6,5 +6,11 @@
     ".": "./manager.html",
     "./manager.html": "./manager.html",
     "./manager.js": "./manager.js"
+  },
+  "scripts": {
+    "start": "node serve.mjs"
+  },
+  "dependencies": {
+    "@exhibit-connect/core": "0.1.0"
   }
 }
